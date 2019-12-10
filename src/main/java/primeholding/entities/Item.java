@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Table(name = "items")
 @Data
 @EntityListeners(AuditingEntityListener.class)
-public class Item extends Auditable {
+public class Item extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

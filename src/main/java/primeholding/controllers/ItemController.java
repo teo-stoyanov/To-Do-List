@@ -51,7 +51,7 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
-        Item item = ToDoMapper.INSTANCE.itemDto(dto);
+        Item item = ToDoMapper.INSTANCE.itemDtoToItem(dto);
         this.service.register(item);
 
         return new ResponseEntity<>(item, HttpStatus.CREATED);
@@ -69,7 +69,7 @@ public class ItemController {
         if (uniqueValues.stream().anyMatch(s -> s.equals(dto.getTitle()))) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        Item toDoItem = ToDoMapper.INSTANCE.itemDto(dto);
+        Item toDoItem = ToDoMapper.INSTANCE.itemDtoToItem(dto);
         toDoItem.setCreatedDate(entity.get().getCreatedDate());
 
         this.service.register(toDoItem);
