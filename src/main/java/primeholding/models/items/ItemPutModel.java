@@ -1,9 +1,9 @@
-package primeholding.mapper;
+package primeholding.models.items;
 
 import lombok.Data;
 
 @Data
-public class ItemPatchModel {
+public class ItemPutModel {
     private String title;
     private String description;
     private Boolean isCompleted;

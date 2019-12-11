@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import primeholding.constants.Constants;
 import primeholding.entities.Item;
-import primeholding.mapper.ItemGetModel;
-import primeholding.mapper.ItemPatchModel;
-import primeholding.mapper.ItemPostModel;
-import primeholding.mapper.ItemPutModel;
+import primeholding.models.items.ItemGetModel;
+import primeholding.models.items.ItemPostModel;
+import primeholding.models.items.ItemPutModel;
+import primeholding.models.ToDoMapper;
 import primeholding.service.ItemService;
 
 import java.util.ArrayList;
@@ -30,10 +29,12 @@ import java.util.Optional;
 public class ItemController {
 
     private final ItemService service;
+    private ToDoMapper toDoMapper;
 
     @Autowired
-    public ItemController(ItemService itemService) {
+    public ItemController(ItemService itemService, ToDoMapper toDoMapper) {
         this.service = itemService;
+        this.toDoMapper = toDoMapper;
     }
 
     @GetMapping
@@ -41,11 +42,11 @@ public class ItemController {
         List<Item> items = this.service.getAll();
         List<ItemGetModel> itemGetModels = new ArrayList<>();
         items.forEach(item -> {
-            ItemGetModel itemGetModel = Constants.INSTANCE.itemToItemGetModel(item);
+            ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(item);
             itemGetModels.add(itemGetModel);
         });
 
-        return new ResponseEntity<>(itemGetModels,HttpStatus.OK);
+        return new ResponseEntity<>(itemGetModels, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -54,7 +55,7 @@ public class ItemController {
         if (!entity.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        ItemGetModel itemGetModel = Constants.INSTANCE.itemToItemGetModel(entity.get());
+        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(entity.get());
 
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
@@ -67,9 +68,9 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Item item = Constants.INSTANCE.postModelToItem(postModel);
+        Item item = this.toDoMapper.postModelToItem(postModel);
         Item result = this.service.register(item);
-        ItemGetModel itemGetModel = Constants.INSTANCE.itemToItemGetModel(result);
+        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
 
         return new ResponseEntity<>(itemGetModel, HttpStatus.CREATED);
     }
@@ -88,12 +89,12 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Item toDoItem = Constants.INSTANCE.putModelToItem(putModel);
+        Item toDoItem = this.toDoMapper.putModelToItem(putModel);
         toDoItem.setCreatedDate(entity.get().getCreatedDate());
         toDoItem.setId(id);
 
         Item result = this.service.register(toDoItem);
-        ItemGetModel itemGetModel = Constants.INSTANCE.itemToItemGetModel(result);
+        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
 
@@ -115,7 +116,7 @@ public class ItemController {
         updateEntity.setId(id);
 
         Item result = this.service.register(updateEntity);
-        ItemGetModel itemGetModel = Constants.INSTANCE.itemToItemGetModel(result);
+        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
 

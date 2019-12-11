@@ -1,4 +1,4 @@
-package primeholding.mapper;
+package primeholding.models.items;
 
 import lombok.Data;
 
