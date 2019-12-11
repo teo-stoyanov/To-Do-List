@@ -24,8 +24,8 @@ public class ItemService implements BaseService<Item> {
     }
 
     @Override
-    public void register(Item entity) {
-        this.repository.save(entity);
+    public Item register(Item entity) {
+        return this.repository.save(entity);
     }
 
     @Override
@@ -61,5 +61,10 @@ public class ItemService implements BaseService<Item> {
     @Override
     public List<String> getUniqueValues() {
         return this.repository.getUniqueValues();
+    }
+
+    @Override
+    public Optional<Item> findByProp(String title) {
+        return this.repository.findByTitle(title);
     }
 }

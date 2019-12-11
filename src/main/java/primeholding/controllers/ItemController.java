@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("ALL")
 @RestController()
 @RequestMapping("/item")
 public class ItemController {
@@ -49,6 +50,8 @@ public class ItemController {
     public ResponseEntity<Item> register(@RequestBody ItemDto dto) {
         if (this.service.getUniqueValues().stream().anyMatch(s -> s.equals(dto.getTitle()))) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } else if (dto.getTitle() == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
 
         Item item = Constants.INSTANCE.itemDtoToItem(dto);
@@ -58,23 +61,25 @@ public class ItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ItemDto> put(@PathVariable Integer id, @RequestBody ItemDto dto) {
+    public ResponseEntity<Item> put(@PathVariable Integer id, @RequestBody ItemDto dto) {
         Optional<Item> entity = this.service.getById(id);
         if (!entity.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        List uniqueValues = this.service.getUniqueValues();
-        uniqueValues.remove(entity.get().getTitle());
-        if (uniqueValues.stream().anyMatch(s -> s.equals(dto.getTitle()))) {
+        Optional<Item> optional = this.service.findByProp(dto.getTitle());
+        if (optional.isPresent() && !optional.get().getId().equals(id)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } else if (dto.getTitle() == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-        Item toDoItem = Constants.INSTANCE.itemDtoToItem(dto);
-        toDoItem.setId(id);
-        toDoItem.setCreatedDate(entity.get().getCreatedDate());
 
-        this.service.register(toDoItem);
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        Item toDoItem = Constants.INSTANCE.itemDtoToItem(dto);
+        toDoItem.setCreatedDate(entity.get().getCreatedDate());
+        toDoItem.setId(id);
+
+        Item result = (Item) this.service.register(toDoItem);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
@@ -82,19 +87,20 @@ public class ItemController {
         Optional<Item> entity = this.service.getById(id);
         if (!entity.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else if (fields.get("title") == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
 
-        List
-                uniqueValues = this.service.getUniqueValues();
-        uniqueValues.remove(entity.get().getTitle());
-        if (fields.values().stream().anyMatch(uniqueValues::contains)) {
+        Optional<Item> optional = this.service.findByProp(fields.get("title").toString());
+        if (optional.isPresent() && !optional.get().getId().equals(id)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         Item updateEntity = (Item) this.service.update(entity.get(), fields);
         updateEntity.setId(id);
-        this.service.register(updateEntity);
-        return new ResponseEntity<>(entity.get(), HttpStatus.OK);
+
+        Item result = (Item) this.service.register(updateEntity);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

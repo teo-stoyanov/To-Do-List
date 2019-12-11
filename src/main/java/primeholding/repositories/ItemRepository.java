@@ -6,10 +6,13 @@ import org.springframework.stereotype.Repository;
 import primeholding.entities.Item;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     @Query(value = "SELECT title FROM items", nativeQuery = true)
     List<String> getUniqueValues();
+
+    Optional<Item> findByTitle(String title);
 }

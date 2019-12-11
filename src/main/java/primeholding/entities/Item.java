@@ -23,7 +23,6 @@ public class Item extends Auditable{
     private Integer id;
 
     @Column(unique = true)
-    @NotNull(message = "Title can not be null")
     private String title;
 
     @Column
