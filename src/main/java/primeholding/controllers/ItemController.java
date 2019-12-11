@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import primeholding.constants.Constants;
 import primeholding.entities.Item;
 import primeholding.mapper.ItemDto;
-import primeholding.mapper.ToDoMapper;
 import primeholding.service.BaseService;
 import primeholding.service.ItemService;
 
@@ -51,7 +51,7 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
-        Item item = ToDoMapper.INSTANCE.itemDtoToItem(dto);
+        Item item = Constants.INSTANCE.itemDtoToItem(dto);
         this.service.register(item);
 
         return new ResponseEntity<>(item, HttpStatus.CREATED);
@@ -69,7 +69,8 @@ public class ItemController {
         if (uniqueValues.stream().anyMatch(s -> s.equals(dto.getTitle()))) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        Item toDoItem = ToDoMapper.INSTANCE.itemDtoToItem(dto);
+        Item toDoItem = Constants.INSTANCE.itemDtoToItem(dto);
+        toDoItem.setId(id);
         toDoItem.setCreatedDate(entity.get().getCreatedDate());
 
         this.service.register(toDoItem);
@@ -83,13 +84,15 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        List uniqueValues = this.service.getUniqueValues();
+        List
+                uniqueValues = this.service.getUniqueValues();
         uniqueValues.remove(entity.get().getTitle());
         if (fields.values().stream().anyMatch(uniqueValues::contains)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         Item updateEntity = (Item) this.service.update(entity.get(), fields);
+        updateEntity.setId(id);
         this.service.register(updateEntity);
         return new ResponseEntity<>(entity.get(), HttpStatus.OK);
     }
