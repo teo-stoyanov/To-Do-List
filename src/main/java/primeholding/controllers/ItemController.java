@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@SuppressWarnings("ALL")
-@RestController()
+@RestController
 @RequestMapping("/item")
 public class ItemController {
 
@@ -34,20 +33,20 @@ public class ItemController {
         this.service = itemService;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<List<Item>> getAll() {
+    @GetMapping
+    public ResponseEntity<List<Item>> get() {
         return new ResponseEntity<>(this.service.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Item> getById(@PathVariable Integer id) {
+    public ResponseEntity<Item> get(@PathVariable Integer id) {
         Optional<Item> entity = this.service.getById(id);
         return entity.map(toDoEntity -> new ResponseEntity<>(toDoEntity, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Item> register(@RequestBody ItemDto dto) {
+    @PostMapping
+    public ResponseEntity<Item> post(@RequestBody ItemDto dto) {
         if (this.service.getUniqueValues().stream().anyMatch(s -> s.equals(dto.getTitle()))) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         } else if (dto.getTitle() == null) {
