@@ -2,42 +2,38 @@ package primeholding.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import primeholding.entities.Item;
 import primeholding.entities.ToDoList;
-import primeholding.repositories.ItemRepository;
+import primeholding.repositories.ListRepository;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-public class ItemService implements BaseService<Item> {
-    private static final Logger LOGGER = Logger.getLogger(ItemService.class.getName());
+public class ListService implements BaseService<ToDoList> {
+    private static final Logger LOGGER = Logger.getLogger(ListService.class.getName());
 
-    private ItemRepository repository;
-    private ListService listService;
+    private ListRepository repository;
 
     @Autowired
-    public ItemService(ItemRepository repository, ListService listService) {
+    public ListService(ListRepository repository) {
         this.repository = repository;
-        this.listService = listService;
     }
 
     @Override
-    public Item register(Item entity) {
+    public ToDoList register(ToDoList entity) {
         return this.repository.save(entity);
     }
 
     @Override
-    public List<Item> getAll() {
+    public java.util.List<ToDoList> getAll() {
         return this.repository.findAll();
     }
 
     @Override
-    public Optional<Item> getById(Integer id) {
+    public Optional<ToDoList> getById(Integer id) {
         return this.repository.findById(id);
     }
 
@@ -47,31 +43,27 @@ public class ItemService implements BaseService<Item> {
     }
 
     @Override
-    public Item update(Item item, Map<String, Object> fields) {
+    public ToDoList update(ToDoList list, Map<String, Object> fields) {
         for (Map.Entry<String, Object> stringObjectEntry : fields.entrySet()) {
             Field entityFiled;
             try {
-                entityFiled = item.getClass().getDeclaredField(stringObjectEntry.getKey());
+                entityFiled = list.getClass().getDeclaredField(stringObjectEntry.getKey());
                 entityFiled.setAccessible(true);
-                entityFiled.set(item, stringObjectEntry.getValue());
+                entityFiled.set(list, stringObjectEntry.getValue());
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
         }
-        return item;
+        return list;
     }
 
     @Override
-    public List<String> getUniqueValues() {
+    public java.util.List<String> getUniqueValues() {
         return this.repository.getUniqueValues();
     }
 
     @Override
-    public Optional<Item> findByProp(String title) {
-        return this.repository.findByTitle(title);
-    }
-
-    public Optional<ToDoList> getListById(Integer id){
-        return this.listService.getById(id);
+    public Optional<ToDoList> findByProp(String name) {
+        return this.repository.findByName(name);
     }
 }

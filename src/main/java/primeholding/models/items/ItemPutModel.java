@@ -7,4 +7,5 @@ public class ItemPutModel {
     private String title;
     private String description;
     private Boolean isCompleted;
+    private Integer listId;
 }

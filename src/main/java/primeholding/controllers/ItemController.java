@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import primeholding.entities.Item;
+import primeholding.entities.ToDoList;
 import primeholding.models.items.ItemGetModel;
 import primeholding.models.items.ItemPostModel;
 import primeholding.models.items.ItemPutModel;
@@ -24,17 +25,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@RestController
+@RestController(value = "itemController")
 @RequestMapping("/item")
 public class ItemController {
+    private static final String LIST_ID = "listId";
+    private static final String TITLE = "title";
 
     private final ItemService service;
-    private ToDoMapper toDoMapper;
+    private ToDoMapper mapper;
 
     @Autowired
-    public ItemController(ItemService itemService, ToDoMapper toDoMapper) {
+    public ItemController(ItemService itemService, ToDoMapper mapper) {
         this.service = itemService;
-        this.toDoMapper = toDoMapper;
+        this.mapper = mapper;
     }
 
     @GetMapping
@@ -42,7 +45,8 @@ public class ItemController {
         List<Item> items = this.service.getAll();
         List<ItemGetModel> itemGetModels = new ArrayList<>();
         items.forEach(item -> {
-            ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(item);
+            ItemGetModel itemGetModel = this.mapper.itemToItemGetModel(item);
+            itemGetModel.setListId(item.getToDoList().getId());
             itemGetModels.add(itemGetModel);
         });
 
@@ -55,8 +59,8 @@ public class ItemController {
         if (!entity.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(entity.get());
-
+        ItemGetModel itemGetModel = this.mapper.itemToItemGetModel(entity.get());
+        itemGetModel.setListId(entity.get().getToDoList().getId());
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
 
@@ -64,14 +68,20 @@ public class ItemController {
     public ResponseEntity<ItemGetModel> post(@RequestBody ItemPostModel postModel) {
         if (this.service.getUniqueValues().stream().anyMatch(s -> s.equals(postModel.getTitle()))) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } else if (postModel.getTitle() == null) {
+        } else if (postModel.getTitle() == null || postModel.getListId() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Item item = this.toDoMapper.postModelToItem(postModel);
-        Item result = this.service.register(item);
-        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
+        Optional<ToDoList> list = this.service.getListById(postModel.getListId());
+        if (!list.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
+        Item item = this.mapper.postModelToItem(postModel);
+        item.setToDoList(list.get());
+        Item result = this.service.register(item);
+        ItemGetModel itemGetModel = this.mapper.itemToItemGetModel(result);
+        itemGetModel.setListId(result.getToDoList().getId());
         return new ResponseEntity<>(itemGetModel, HttpStatus.CREATED);
     }
 
@@ -82,19 +92,26 @@ public class ItemController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        Optional<ToDoList> list = this.service.getListById(putModel.getListId());
+        if (!list.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
         Optional<Item> optional = this.service.findByProp(putModel.getTitle());
         if (optional.isPresent() && !optional.get().getId().equals(id)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } else if (putModel.getTitle() == null) {
+        } else if (putModel.getTitle() == null || putModel.getListId() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Item toDoItem = this.toDoMapper.putModelToItem(putModel);
+        Item toDoItem = this.mapper.putModelToItem(putModel);
         toDoItem.setCreatedDate(entity.get().getCreatedDate());
+        toDoItem.setToDoList(list.get());
         toDoItem.setId(id);
 
         Item result = this.service.register(toDoItem);
-        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
+        ItemGetModel itemGetModel = this.mapper.itemToItemGetModel(result);
+        itemGetModel.setListId(result.getToDoList().getId());
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
 
@@ -103,20 +120,31 @@ public class ItemController {
         Optional<Item> entity = this.service.getById(id);
         if (!entity.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else if (fields.get("title") == null) {
+        } else if (fields.get(TITLE) == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        Optional<Item> optional = this.service.findByProp(fields.get("title").toString());
+        Optional<Item> optional = this.service.findByProp(fields.get(TITLE).toString());
         if (optional.isPresent() && !optional.get().getId().equals(id)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
 
         Item updateEntity = this.service.update(entity.get(), fields);
+        if (fields.containsKey(LIST_ID) && fields.get(LIST_ID) != null) {
+            Optional<ToDoList> list = this.service.getListById(Integer.parseInt(fields.get(LIST_ID).toString()));
+            if (!list.isPresent()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            } else {
+                updateEntity.setToDoList(list.get());
+            }
+        }
         updateEntity.setId(id);
 
         Item result = this.service.register(updateEntity);
-        ItemGetModel itemGetModel = this.toDoMapper.itemToItemGetModel(result);
+        ItemGetModel itemGetModel = this.mapper.itemToItemGetModel(result);
+        if (result.getToDoList() != null) {
+            itemGetModel.setListId(result.getToDoList().getId());
+        }
         return new ResponseEntity<>(itemGetModel, HttpStatus.OK);
     }
 
