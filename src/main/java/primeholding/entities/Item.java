@@ -1,15 +1,10 @@
 package primeholding.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "items")
@@ -29,5 +24,10 @@ public class Item extends Auditable {
 
     @Column(name = "is_completed")
     private Boolean isCompleted;
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "list_id", nullable = false)
+    private ToDoList toDoList;
 }
 

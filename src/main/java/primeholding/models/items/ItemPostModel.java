@@ -7,4 +7,5 @@ public class ItemPostModel {
     private String title;
     private String description;
     private Boolean isCompleted = false;
+    private Integer listId;
 }
