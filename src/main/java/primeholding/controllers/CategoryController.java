@@ -22,9 +22,11 @@ import primeholding.models.category.CategoryPutModel;
 import primeholding.service.CategoryService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/category")
@@ -140,7 +142,9 @@ public class CategoryController {
         if (optional.isPresent() && !optional.get().getId().equals(id)) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         } else if (fields.containsKey(LIST_ID)) {
-            for (Integer categoryId : (List<Integer>) fields.get(LIST_ID)) {
+            List<Integer> integerList = (List<Integer>) fields.get(LIST_ID);
+            Set<Integer> integersSet = new HashSet<>(integerList);
+            for (Integer categoryId : integersSet) {
                 Optional<ToDoList> categoryById = this.service.getOptionalToDoListById(categoryId);
                 if (!categoryById.isPresent()) {
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -152,7 +156,9 @@ public class CategoryController {
         category.setId(id);
         if(fields.containsKey(LIST_ID)){
             category.setLists(new ArrayList<>());
-            for (Integer listId : (List<Integer>) fields.get(LIST_ID)) {
+            List<Integer> integerList = (List<Integer>) fields.get(LIST_ID);
+            Set<Integer> integersSet = new HashSet<>(integerList);
+            for (Integer listId : integersSet) {
                 category.getLists().add(this.service.getToDoListById(listId));
             }
         }
