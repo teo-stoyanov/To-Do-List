@@ -51,7 +51,10 @@ class ListServiceTest {
 
     @Test
     public void serviceDeleteByIdShouldRemoveEntity(){
-        this.listService.deleteById(1);
-        Assertions.assertFalse(this.listService.getById(1).isPresent());
+        ToDoList register = this.listService.register(this.toDoList);
+
+        this.listService.deleteById(register.getId());
+
+        Assertions.assertFalse(this.listService.getById(register.getId()).isPresent());
     }
 }

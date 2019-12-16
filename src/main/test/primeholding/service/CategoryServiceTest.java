@@ -28,30 +28,33 @@ class CategoryServiceTest {
     }
 
     @Test
-    public void serviceShouldPersistItemAndReturnCorrect(){
+    public void serviceShouldPersistItemAndReturnCorrect() {
         Category registered = this.categoryService.register(this.category);
         Optional<Category> optionalItem = this.categoryService.findByProp(registered.getName());
-        if(!optionalItem.isPresent()){
+        if (!optionalItem.isPresent()) {
             throw new NoSuchElementException();
         }
 
-        Assertions.assertEquals(this.category.getName(),optionalItem.get().getName());
+        Assertions.assertEquals(this.category.getName(), optionalItem.get().getName());
     }
 
     @Test
-    public void serviceGetByIdShouldReturnCorrectList(){
+    public void serviceGetByIdShouldReturnCorrectList() {
         Category registered = this.categoryService.register(this.category);
         Optional<Category> optionalToDoList = this.categoryService.getById(registered.getId());
-        if(!optionalToDoList.isPresent()){
+        if (!optionalToDoList.isPresent()) {
             throw new NoSuchElementException();
         }
 
-        Assertions.assertEquals(this.category.getName(),optionalToDoList.get().getName());
+        Assertions.assertEquals(this.category.getName(), optionalToDoList.get().getName());
     }
 
     @Test
-    public void serviceDeleteByIdShouldRemoveEntity(){
-        this.categoryService.deleteById(1);
-        Assertions.assertFalse(this.categoryService.getById(1).isPresent());
+    public void serviceDeleteByIdShouldRemoveEntity() {
+        Category register = this.categoryService.register(this.category);
+
+        this.categoryService.deleteById(register.getId());
+
+        Assertions.assertFalse(this.categoryService.getById(register.getId()).isPresent());
     }
 }

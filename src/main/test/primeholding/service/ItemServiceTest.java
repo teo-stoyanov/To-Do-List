@@ -61,7 +61,10 @@ class ItemServiceTest {
 
     @Test
     public void serviceDeleteByIdShouldRemoveEntity(){
-        this.itemService.deleteById(1);
-        Assertions.assertFalse(this.itemService.getById(1).isPresent());
+        Item register = this.itemService.register(this.item);
+
+        this.itemService.deleteById(register.getId());
+
+        Assertions.assertFalse(this.itemService.getById(register.getId()).isPresent());
     }
 }
