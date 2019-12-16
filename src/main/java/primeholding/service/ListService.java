@@ -2,6 +2,7 @@ package primeholding.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import primeholding.entities.Category;
 import primeholding.entities.ToDoList;
 import primeholding.repositories.ListRepository;
 
@@ -16,10 +17,16 @@ public class ListService implements BaseService<ToDoList> {
     private static final Logger LOGGER = Logger.getLogger(ListService.class.getName());
 
     private ListRepository repository;
+    private CategoryService categoryService;
 
     @Autowired
     public ListService(ListRepository repository) {
         this.repository = repository;
+    }
+
+    @Autowired
+    public void setCategoryService(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @Override
@@ -65,5 +72,17 @@ public class ListService implements BaseService<ToDoList> {
     @Override
     public Optional<ToDoList> findByProp(String name) {
         return this.repository.findByName(name);
+    }
+
+    public Optional<Category> getOptionalCategoryById(Integer id) {
+        return this.categoryService.getById(id);
+    }
+
+    public Category getCategoryById(Integer id) {
+        return this.categoryService.getCategoryById(id);
+    }
+
+    public ToDoList getToDoList(Integer id) {
+        return this.repository.getOne(id);
     }
 }
