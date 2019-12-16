@@ -3,16 +3,16 @@ package primeholding.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import primeholding.entities.ToDoList;
+import primeholding.entities.Category;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ListRepository extends JpaRepository<ToDoList,Integer> {
+public interface CategoryRepository extends JpaRepository<Category,Integer> {
 
-    @Query(value = "SELECT name FROM to_do_list", nativeQuery = true)
+    @Query(value = "SELECT name FROM category", nativeQuery = true)
     List<String> getUniqueValues();
 
-    Optional<ToDoList> findByName(String name);
+    Optional<Category> findByName(String name);
 }

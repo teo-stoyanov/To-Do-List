@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class ListChildModel {
+public class ListGetItemsModel {
     private Integer id;
     private String title;
     private String description;
